@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:gavel.start"
+    "onCommand:gavel.start",
+    "onCommand:gavel.problem"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,6 +19,11 @@
       {
         "command": "gavel.start",
         "title": "Start new Judge coding session",
+        "category": "Judge Trial"
+      },
+      {
+        "command": "gavel.problem",
+        "title": "Open a new problem",
         "category": "Judge Trial"
       }
     ]
