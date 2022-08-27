@@ -5,6 +5,46 @@ import * as fs from 'fs';
 
 export let _SESSION: string;
 
+export function sendFile(filePath: string, problemPath: string) {
+	const formData = {
+		file: fs.createReadStream(filePath),
+		annotation: "",
+		compiler_id: "Clang++17",
+		token_uid: "6b26d4909b4fd817a19ef8eeafce2009799e68002dccb8814f7c7187811793c7bed33b6402d2617bf6b0df620016cee371b815ea3d6cd64d4df50caf72867dee",
+		submit: ""
+	};
+
+	const options = {
+		url: `https://jutge.org${problemPath}`,
+		headers: {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0',
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+			'Accept-Language': 'en-US,en;q=0.5',
+			'Accept-Encoding': 'gzip, deflate, br',
+			'Referer': 'https://jutge.org/problems/P15613_ca/submissions/S006',
+			'Origin': 'https://jutge.org',
+			'Connection': 'keep-alive',
+			'Cookie': 'PHPSESSID=kb0i6874rn51rn94bp6ota000k',
+			'Upgrade-Insecure-Requests': '1',
+			'Sec-Fetch-Dest': 'document',
+			'Sec-Fetch-Mode': 'navigate',
+			'Sec-Fetch-Site': 'same-origin',
+			'Sec-Fetch-User': '?1',
+			'Pragma': 'no-cache',
+			'Cache-Control': 'no-cache'
+		},
+		formData: formData
+	};
+
+	request.post(options, function optionalCallback(err: any, httpResponse: any, body: string) {
+		if (err) {
+			return console.error('upload failed:', err);
+		}
+		console.log('Upload successful!  Server responded with:', body);
+		console.log(httpResponse.statusCode);
+	});
+}
+
 export async function loginCheck() {
 	if (!_SESSION) {
 		_SESSION = await getLoginInfo();
@@ -12,7 +52,7 @@ export async function loginCheck() {
 	}
 }
 
-export function getWebviewContent(url: string, session: string): Promise<string> {
+export function getWebviewContent(url: string): Promise<string> {
 	return new Promise(function (resolve, reject) {
 		const options = {
 			url: url,
@@ -21,7 +61,7 @@ export function getWebviewContent(url: string, session: string): Promise<string>
 				'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
 				'Cache-Control': 'no-cache',
 				'Connection': 'keep-alive',
-				'Cookie': `_ga=GA1.2.1936067010.1660485179; PHPSESSID=${session}`,
+				'Cookie': `_ga=GA1.2.1936067010.1660485179; PHPSESSID=${_SESSION}`,
 				'Origin': 'https://jutge.org',
 				'Pragma': 'no-cache',
 				'Referer': 'https://jutge.org/',

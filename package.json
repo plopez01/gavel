@@ -11,7 +11,8 @@
   ],
   "activationEvents": [
     "onCommand:gavel.dashboard",
-    "onCommand:gavel.problem"
+    "onCommand:gavel.problem",
+    "onCommand:gavel.submit"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -24,6 +25,11 @@
       {
         "command": "gavel.problem",
         "title": "Set working problem",
+        "category": "Judge Trial"
+      },
+      {
+        "command": "gavel.submit",
+        "title": "Submit problem to the judge",
         "category": "Judge Trial"
       }
     ]
@@ -50,6 +56,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "form-data": "^4.0.0",
     "request": "^2.88.2"
   }
 }

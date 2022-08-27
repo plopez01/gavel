@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
-import { _SESSION, loginCheck, getWebviewContent } from './net';
+import { _SESSION, loginCheck, getWebviewContent, sendFile } from './net';
+
 let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+let _PROBLEMPATH: string;
 
 export function activate(context: vscode.ExtensionContext) {
 	let webViewPanel;
@@ -18,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 
 
-			let dashboardRaw = await getWebviewContent('https://jutge.org/dashboard', _SESSION);
+			let dashboardRaw = await getWebviewContent('https://jutge.org/dashboard');
 			//console.log(dashboardRaw);
 			// Time to hack us into the data, webscrapping time
 			let username = dashboardRaw.split(`<span class='hidden-xs'>`)[1].split('\n')[1].replace(/\s+/, "");
@@ -70,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (!problemId) return vscode.window.showErrorMessage('You need to enter a valid problem ID');
 
 			// And set its HTML content
-			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`, _SESSION);
+			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`);
 
 			try {
 				let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
@@ -126,6 +128,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 				html += `</body></html>`;
 
+				_PROBLEMPATH = problemRaw.split(`<form class='form-horizontal' action='`)[1].split("'")[0];
+				console.log(_PROBLEMPATH);
 				// Create and show panel
 				webViewPanel = vscode.window.createWebviewPanel(
 					problemId as string,
@@ -141,6 +145,26 @@ export function activate(context: vscode.ExtensionContext) {
 				statusBar.show();
 			} catch (e) {
 				vscode.window.showErrorMessage("Problem code invalid, or you don't have access.");
+			}
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('gavel.submit', async () => {
+			loginCheck();
+			if (_PROBLEMPATH) {
+				const activeEditor = vscode.window.activeTextEditor;
+				if (activeEditor) {
+					//For Getting File Path
+					let filePath = activeEditor.document.uri.fsPath;
+
+					sendFile(filePath, _PROBLEMPATH);
+
+				} else {
+					vscode.window.showErrorMessage("You don't have any editor active.");
+				}
+			} else {
+				vscode.window.showErrorMessage("You haven't selected any problem.");
 			}
 		})
 	);
