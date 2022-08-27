@@ -5,12 +5,12 @@ import * as fs from 'fs';
 
 export let _SESSION: string;
 
-export function sendFile(filePath: string, problemPath: string) {
+export function sendFile(filePath: string, problemPath: string, uploadToken: string) {
 	const formData = {
 		file: fs.createReadStream(filePath),
 		annotation: "",
 		compiler_id: "Clang++17",
-		token_uid: "6b26d4909b4fd817a19ef8eeafce2009799e68002dccb8814f7c7187811793c7bed33b6402d2617bf6b0df620016cee371b815ea3d6cd64d4df50caf72867dee",
+		token_uid: uploadToken,
 		submit: ""
 	};
 
@@ -24,7 +24,7 @@ export function sendFile(filePath: string, problemPath: string) {
 			'Referer': 'https://jutge.org/problems/P15613_ca/submissions/S006',
 			'Origin': 'https://jutge.org',
 			'Connection': 'keep-alive',
-			'Cookie': 'PHPSESSID=kb0i6874rn51rn94bp6ota000k',
+			'Cookie': `PHPSESSID=${_SESSION}`,
 			'Upgrade-Insecure-Requests': '1',
 			'Sec-Fetch-Dest': 'document',
 			'Sec-Fetch-Mode': 'navigate',

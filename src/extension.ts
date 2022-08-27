@@ -3,6 +3,7 @@ import { _SESSION, loginCheck, getWebviewContent, sendFile } from './net';
 
 let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 let _PROBLEMPATH: string;
+let _UPLOADTOKEN: string;
 
 export function activate(context: vscode.ExtensionContext) {
 	let webViewPanel;
@@ -129,7 +130,9 @@ export function activate(context: vscode.ExtensionContext) {
 				html += `</body></html>`;
 
 				_PROBLEMPATH = problemRaw.split(`<form class='form-horizontal' action='`)[1].split("'")[0];
-				console.log(_PROBLEMPATH);
+				_UPLOADTOKEN = problemRaw.split(`<input name='token_uid' type='hidden' value='`)[1].split(`' />`)[0];
+
+				console.log(_UPLOADTOKEN);
 				// Create and show panel
 				webViewPanel = vscode.window.createWebviewPanel(
 					problemId as string,
@@ -158,7 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
 					//For Getting File Path
 					let filePath = activeEditor.document.uri.fsPath;
 
-					sendFile(filePath, _PROBLEMPATH);
+					sendFile(filePath, _PROBLEMPATH, _UPLOADTOKEN);
 
 				} else {
 					vscode.window.showErrorMessage("You don't have any editor active.");
