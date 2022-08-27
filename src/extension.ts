@@ -1,17 +1,13 @@
 import * as vscode from 'vscode';
-import * as os from 'os';
-import * as fs from 'fs';
-import { getLoginInfo, getWebviewContent } from './net';
-let _SESSION : string;
+import { _SESSION, loginCheck, getWebviewContent } from './net';
+let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 
 export function activate(context: vscode.ExtensionContext) {
 	let webViewPanel;
 	context.subscriptions.push(
-		vscode.commands.registerCommand('gavel.start', async () => {
+		vscode.commands.registerCommand('gavel.dashboard', async () => {
 
-			_SESSION = await getLoginInfo();
-
-			vscode.window.showInformationMessage("Logged in! Welcome to the courtroom.");
+			loginCheck();
 
 			// Create and show panel
 			webViewPanel = vscode.window.createWebviewPanel(
@@ -63,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.problem', async () => {
 
-			if(!_SESSION) return vscode.window.showWarningMessage('You need to login first (gavel.start)');
+			loginCheck();
 
 			const problemId = await vscode.window.showInputBox({
 				ignoreFocusOut: true,
@@ -71,80 +67,81 @@ export function activate(context: vscode.ExtensionContext) {
 				prompt: "jutge.org's problem id",
 			});
 
-			if(!problemId) return vscode.window.showErrorMessage('You need to enter a valid problem ID');
-
-			// Create and show panel
-			webViewPanel = vscode.window.createWebviewPanel(
-				problemId as string,
-				problemId as string,
-				vscode.ViewColumn.Two,
-				{}
-			);
+			if (!problemId) return vscode.window.showErrorMessage('You need to enter a valid problem ID');
 
 			// And set its HTML content
 			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`, _SESSION);
-			let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
-			let problemStatus = problemRaw.split(`<div class='col-sm-6'>\n                \n        <div class='panel panel-default'>\n            <div class='panel-heading'>\n                `)[1].split('\n')[0];
-			let problemSummary = problemRaw.split(`<P>`)[1].split('</P>')[0];
-			let expectedInput = problemRaw.split(`<P>`)[3].split('</P>')[0];
-			let expectedOutput = problemRaw.split(`<P>`)[5].split('</P>')[0];
-		
 
-			let html = `<!DOCTYPE html>
-			<html>
-				<header>
-					<style>
-						hr.solid {
-							border-top: 3px solid #bbb;
-						}
-						p1 {
-							font-size: medium;
-						}
-						td, th {
-							border: 1px solid #555555;
-							text-align: left;
-							padding: 8px;
-						}
-						tr:nth-child(even) {
-							background-color: #555555;
-						}
-					</style>
-				</header>
-				<body>
-					<strong><h1>${problemTitle} - ${problemStatus}</h1></strong>
-					<hr class="solid"><br>
-					<p1>${problemSummary}</p1><br>
-					<h3>Expected Input</h3>
-					<p1>${expectedInput}</p1>
-					<h3>Expected Output</h3>
-					<p1>${expectedOutput}</p1>
-					<h2>Public test case</h2>
-					<table>
-					<tr>
-						<th>Input</th>
-						<th>Output</th>
-					</tr>
-					`;
-			
-			for(let i = 1; true; i+= 2){
-				let inVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i];
-				let outVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i+1];
-				if(!inVal || !outVal) break;
-				html += `<tr><td>${inVal.split('</pre>')[0].replace('\n', '<br>')}</td><td>${outVal.split('</pre>')[0].replace('\n', '<br>')}</td></tr>`;
-				if(i % 2) i+=2;
-			}
+			try {
+				let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
+				let problemStatus = problemRaw.split(`<div class='col-sm-6'>\n                \n        <div class='panel panel-default'>\n            <div class='panel-heading'>\n                `)[1].split('\n')[0];
+				let problemSummary = problemRaw.split(`<P>`)[1].split('</P>')[0];
+				let expectedInput = problemRaw.split(`<P>`)[3].split('</P>')[0];
+				let expectedOutput = problemRaw.split(`<P>`)[5].split('</P>')[0];
 
-			html += `</body></html>`;
 
-			webViewPanel.webview.html = html;
+				let html = `<!DOCTYPE html>
+				<html>
+					<header>
+						<style>
+							hr.solid {
+								border-top: 3px solid #bbb;
+							}
+							p1 {
+								font-size: medium;
+							}
+							td, th {
+								border: 1px solid #555555;
+								text-align: left;
+								padding: 8px;
+							}
+							tr:nth-child(even) {
+								background-color: #555555;
+							}
+						</style>
+					</header>
+					<body>
+						<strong><h1>${problemTitle} - ${problemStatus}</h1></strong>
+						<hr class="solid"><br>
+						<p1>${problemSummary}</p1><br>
+						<h3>Expected Input</h3>
+						<p1>${expectedInput}</p1>
+						<h3>Expected Output</h3>
+						<p1>${expectedOutput}</p1>
+						<h2>Public test case</h2>
+						<table>
+						<tr>
+							<th>Input</th>
+							<th>Output</th>
+						</tr>
+						`;
 
-			console.log(problemTitle);
-			fs.writeFile(`${os.homedir()}/problem.html`, problemRaw, function (err: any) {
-				if (err) {
-					console.log(err);
+				for (let i = 1; true; i += 2) {
+					let inVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i];
+					let outVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i + 1];
+					if (!inVal || !outVal) break;
+					html += `<tr><td>${inVal.split('</pre>')[0].replace('\n', '<br>')}</td><td>${outVal.split('</pre>')[0].replace('\n', '<br>')}</td></tr>`;
+					if (i % 2) i += 2;
 				}
-				console.log("Credentials have been removed!");
-			});
+
+				html += `</body></html>`;
+
+				// Create and show panel
+				webViewPanel = vscode.window.createWebviewPanel(
+					problemId as string,
+					problemId as string,
+					vscode.ViewColumn.Two,
+					{}
+				);
+
+				webViewPanel.webview.html = html;
+
+				statusBar.command = 'gavel.problem';
+				statusBar.text = `$(hubot) ${problemId}`;
+				statusBar.show();
+			} catch (e) {
+				vscode.window.showErrorMessage("Problem code invalid, or you don't have access.");
+			}
 		})
 	);
 }

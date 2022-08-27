@@ -3,8 +3,17 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as fs from 'fs';
 
-export function getWebviewContent(url: string, session: string) : Promise<string>{
-	return new Promise(function(resolve, reject){
+export let _SESSION: string;
+
+export async function loginCheck() {
+	if (!_SESSION) {
+		_SESSION = await getLoginInfo();
+		vscode.window.showInformationMessage("Logged in! Welcome to the courtroom.");
+	}
+}
+
+export function getWebviewContent(url: string, session: string): Promise<string> {
+	return new Promise(function (resolve, reject) {
 		const options = {
 			url: url,
 			headers: {
@@ -27,15 +36,15 @@ export function getWebviewContent(url: string, session: string) : Promise<string
 				'sec-ch-ua-platform': '"Windows"'
 			},
 		};
-	
+
 		request.get(options, function (err: any, httpResponse: any, body: string) {
 			resolve(body);
 		})
 	});
 }
 
-export function login(user: string, pass: string) : Promise<string> {
-	return new Promise(function(resolve, reject) {
+export function login(user: string, pass: string): Promise<string> {
+	return new Promise(function (resolve, reject) {
 		const options = {
 			url: 'https://jutge.org/',
 			form: { email: user, password: pass, submit: '' },
@@ -59,15 +68,15 @@ export function login(user: string, pass: string) : Promise<string> {
 				'sec-ch-ua-platform': '"Windows"'
 			},
 		};
-	
+
 		request.post(options, function (err: any, httpResponse: any, body: any) {
 			console.log(body);
 			console.log(httpResponse.headers);
 			console.log(httpResponse.statusCode);
-	
-			if(httpResponse.statusCode == 302){
+
+			if (httpResponse.statusCode == 302) {
 				resolve(httpResponse.headers['set-cookie'][0].split("PHPSESSID=")[1].split(";")[0]);
-			}else{
+			} else {
 				vscode.window.showErrorMessage("An error has ocurred loggin in, please check your credentials");
 				fs.writeFile(`${os.homedir()}/judge.session`, '', function (err: any) {
 					if (err) {
@@ -77,12 +86,12 @@ export function login(user: string, pass: string) : Promise<string> {
 				});
 			}
 		})
-		
+
 	});
 }
 
-export function isSessionValid(session: string) : Promise<boolean> {
-	return new Promise(function(resolve, reject){
+export function isSessionValid(session: string): Promise<boolean> {
+	return new Promise(function (resolve, reject) {
 		const options = {
 			url: 'https://jutge.org/dashboard',
 			headers: {
@@ -105,14 +114,14 @@ export function isSessionValid(session: string) : Promise<boolean> {
 				'sec-ch-ua-platform': '"Windows"'
 			},
 		};
-	
+
 		request.get(options, function (err: any, httpResponse: any, body: any) {
 			resolve(!body.includes('Did you sign in'));
 		})
 	});
 }
 
-export async function getLoginInfo() : Promise<string> {
+export async function getLoginInfo(): Promise<string> {
 
 	try {
 		const session = fs.readFileSync(`${os.homedir()}/judge.session`, 'utf8');
@@ -137,20 +146,20 @@ export async function getLoginInfo() : Promise<string> {
 		prompt: "jutge.org's password",
 	});
 
-	if(username && password){
+	if (username && password) {
 		login(username, password).then((session) => {
 			console.log(session);
-			if(session == undefined) return;
+			if (session == undefined) return;
 			fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
 				if (err) {
 					return console.log(err);
 				}
 				console.log("Credentials have been saved!");
 			});
-		
+
 			return session;
 		});
-	}else{
+	} else {
 		vscode.window.showErrorMessage("You need to provide a valid username and password");
 	}
 	return "";

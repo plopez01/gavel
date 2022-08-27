@@ -10,20 +10,20 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:gavel.start",
+    "onCommand:gavel.dashboard",
     "onCommand:gavel.problem"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "gavel.start",
-        "title": "Start new Judge coding session",
+        "command": "gavel.dashboard",
+        "title": "Show Judge's dashboard",
         "category": "Judge Trial"
       },
       {
         "command": "gavel.problem",
-        "title": "Open a new problem",
+        "title": "Set working problem",
         "category": "Judge Trial"
       }
     ]
