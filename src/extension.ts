@@ -130,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
 				let inVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i];
 				let outVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i+1];
 				if(!inVal || !outVal) break;
-				html += `<tr><td>${inVal.split('</pre>')[0]}</td><td>${outVal.split('</pre>')[0]}</td></tr>`;
+				html += `<tr><td>${inVal.split('</pre>')[0].replace('\n', '<br>')}</td><td>${outVal.split('</pre>')[0].replace('\n', '<br>')}</td></tr>`;
 				if(i % 2) i+=2;
 			}
 
