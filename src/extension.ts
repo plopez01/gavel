@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as os from 'os';
-const request = require('request');
+import * as fs from 'fs';
+import { getLoginInfo, getWebviewContent } from './net';
 let _SESSION : string;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.start', async () => {
 
-			_SESSION = await getLoginInfo()
+			_SESSION = await getLoginInfo();
 
 			vscode.window.showInformationMessage("Logged in! Welcome to the courtroom.");
 
@@ -21,9 +21,8 @@ export function activate(context: vscode.ExtensionContext) {
 				{}
 			);
 
-			// And set its HTML content
-			
-			let dashboardRaw = await getWebviewContent('https://jutge.org/dashboard', _SESSION) as string;
+
+			let dashboardRaw = await getWebviewContent('https://jutge.org/dashboard', _SESSION);
 			//console.log(dashboardRaw);
 			// Time to hack us into the data, webscrapping time
 			let username = dashboardRaw.split(`<span class='hidden-xs'>`)[1].split('\n')[1].replace(/\s+/, "");
@@ -45,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 					</style>
 				</header>
 				<body>
-					<h1>Welcome to the trial "${username}" ;)</h1>
+					<strong><h1>Welcome to the trial "${username}" ;)</h1></strong>
 					<hr class="solid"><br>
 					<p1>Accepted problems: ${acceptedProblems}</p1><br>
 					<p1>Rejected problems: ${rejectedProblems}</p1><br>
@@ -55,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
 					<br>
 					<p2>Excuse ugly html :></p2>
 				</body>
-			</html>`
+			</html>`;
 
 			webViewPanel.webview.html = html;
 		})
@@ -83,9 +82,63 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 
 			// And set its HTML content
-			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`, _SESSION) as string;
+			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`, _SESSION);
+			let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
 			let problemStatus = problemRaw.split(`<div class='col-sm-6'>\n                \n        <div class='panel panel-default'>\n            <div class='panel-heading'>\n                `)[1].split('\n')[0];
-			console.log(problemStatus);
+			let problemSummary = problemRaw.split(`<P>`)[1].split('</P>')[0];
+			let expectedInput = problemRaw.split(`<P>`)[3].split('</P>')[0];
+			let expectedOutput = problemRaw.split(`<P>`)[5].split('</P>')[0];
+		
+
+			let html = `<!DOCTYPE html>
+			<html>
+				<header>
+					<style>
+						hr.solid {
+							border-top: 3px solid #bbb;
+						}
+						p1 {
+							font-size: medium;
+						}
+						td, th {
+							border: 1px solid #555555;
+							text-align: left;
+							padding: 8px;
+						}
+						tr:nth-child(even) {
+							background-color: #555555;
+						}
+					</style>
+				</header>
+				<body>
+					<strong><h1>${problemTitle} - ${problemStatus}</h1></strong>
+					<hr class="solid"><br>
+					<p1>${problemSummary}</p1><br>
+					<h3>Expected Input</h3>
+					<p1>${expectedInput}</p1>
+					<h3>Expected Output</h3>
+					<p1>${expectedOutput}</p1>
+					<h2>Public test case</h2>
+					<table>
+					<tr>
+						<th>Input</th>
+						<th>Output</th>
+					</tr>
+					`;
+			
+			for(let i = 1; true; i+= 2){
+				let inVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i];
+				let outVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i+1];
+				if(!inVal || !outVal) break;
+				html += `<tr><td>${inVal.split('</pre>')[0]}</td><td>${outVal.split('</pre>')[0]}</td></tr>`;
+				if(i % 2) i+=2;
+			}
+
+			html += `</body></html>`;
+
+			webViewPanel.webview.html = html;
+
+			console.log(problemTitle);
 			fs.writeFile(`${os.homedir()}/problem.html`, problemRaw, function (err: any) {
 				if (err) {
 					console.log(err);
@@ -94,158 +147,4 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 		})
 	);
-}
-
-function login(user: string, pass: string) {
-	return new Promise(function(resolve, reject) {
-		const options = {
-			url: 'https://jutge.org/',
-			form: { email: user, password: pass, submit: '' },
-			headers: {
-				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-				'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-				'Cache-Control': 'no-cache',
-				'Connection': 'keep-alive',
-				'Cookie': '_ga=GA1.2.1936067010.1660485179; PHPSESSID=invq8ruvovi0650psnk4526h0a',
-				'Origin': 'https://jutge.org',
-				'Pragma': 'no-cache',
-				'Referer': 'https://jutge.org/',
-				'Sec-Fetch-Dest': 'document',
-				'Sec-Fetch-Mode': 'navigate',
-				'Sec-Fetch-Site': 'same-origin',
-				'Sec-Fetch-User': '?1',
-				'Upgrade-Insecure-Requests': '1',
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-				'sec-ch-ua': '"Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"',
-				'sec-ch-ua-mobile': '?0',
-				'sec-ch-ua-platform': '"Windows"'
-			},
-		};
-	
-		request.post(options, function (err: any, httpResponse: any, body: any) {
-			console.log(body);
-			console.log(httpResponse.headers);
-			console.log(httpResponse.statusCode);
-	
-			if(httpResponse.statusCode == 302){
-				resolve(httpResponse.headers['set-cookie'][0].split("PHPSESSID=")[1].split(";")[0]);
-			}else{
-				vscode.window.showErrorMessage("An error has ocurred loggin in, please check your credentials");
-				fs.writeFile(`${os.homedir()}/judge.session`, '', function (err: any) {
-					if (err) {
-						reject(console.log(err));
-					}
-					console.log("Credentials have been removed!");
-				});
-			}
-		})
-		
-	});
-}
-
-function isSessionValid(session: string){
-	return new Promise(function(resolve, reject){
-		const options = {
-			url: 'https://jutge.org/dashboard',
-			headers: {
-				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-				'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-				'Cache-Control': 'no-cache',
-				'Connection': 'keep-alive',
-				'Cookie': `_ga=GA1.2.1936067010.1660485179; PHPSESSID=${session}`,
-				'Origin': 'https://jutge.org',
-				'Pragma': 'no-cache',
-				'Referer': 'https://jutge.org/',
-				'Sec-Fetch-Dest': 'document',
-				'Sec-Fetch-Mode': 'navigate',
-				'Sec-Fetch-Site': 'same-origin',
-				'Sec-Fetch-User': '?1',
-				'Upgrade-Insecure-Requests': '1',
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-				'sec-ch-ua': '"Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"',
-				'sec-ch-ua-mobile': '?0',
-				'sec-ch-ua-platform': '"Windows"'
-			},
-		};
-	
-		request.get(options, function (err: any, httpResponse: any, body: any) {
-			resolve(!body.includes('Did you sign in'));
-		})
-	});
-}
-
-async function getLoginInfo() {
-
-	const fs = require('fs');
-
-	try {
-		const session = fs.readFileSync(`${os.homedir()}/judge.session`, 'utf8');
-		if (session) {
-			if (await isSessionValid(session)) return session;
-		}
-	} catch (err) {
-		console.error(err);
-	}
-
-	// If not then ask for credentials and save them at the user homedir
-	const username = await vscode.window.showInputBox({
-		ignoreFocusOut: true,
-		placeHolder: "user@example.com",
-		prompt: "jutge.org's username",
-	});
-
-	const password = await vscode.window.showInputBox({
-		ignoreFocusOut: true,
-		password: true,
-		placeHolder: "password",
-		prompt: "jutge.org's password",
-	});
-
-	if(username && password){
-		login(username, password).then((session) => {
-			console.log(session);
-			if(session == undefined) return;
-			fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
-				if (err) {
-					return console.log(err);
-				}
-				console.log("Credentials have been saved!");
-			});
-		
-			return session;
-		});
-	}else{
-		vscode.window.showErrorMessage("You need to provide a valid username and password");
-	}
-}
-
-function getWebviewContent(url: string, session: string){
-	return new Promise(function(resolve, reject){
-		const options = {
-			url: url,
-			headers: {
-				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-				'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-				'Cache-Control': 'no-cache',
-				'Connection': 'keep-alive',
-				'Cookie': `_ga=GA1.2.1936067010.1660485179; PHPSESSID=${session}`,
-				'Origin': 'https://jutge.org',
-				'Pragma': 'no-cache',
-				'Referer': 'https://jutge.org/',
-				'Sec-Fetch-Dest': 'document',
-				'Sec-Fetch-Mode': 'navigate',
-				'Sec-Fetch-Site': 'same-origin',
-				'Sec-Fetch-User': '?1',
-				'Upgrade-Insecure-Requests': '1',
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-				'sec-ch-ua': '"Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"',
-				'sec-ch-ua-mobile': '?0',
-				'sec-ch-ua-platform': '"Windows"'
-			},
-		};
-	
-		request.get(options, function (err: any, httpResponse: any, body: string) {
-			resolve(body);
-		})
-	});
 }
