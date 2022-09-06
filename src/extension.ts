@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { _SESSION, loginCheck, getWebviewContent, sendFile } from './net';
 
-let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 let _PROBLEMPATH: string;
 let _UPLOADTOKEN: string;
 
@@ -10,7 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.dashboard', async () => {
 
-			loginCheck();
+			await loginCheck();
 
 			// Create and show panel
 			webViewPanel = vscode.window.createWebviewPanel(
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.problem', async () => {
 
-			loginCheck();
+			await loginCheck();
 
 			const problemId = await vscode.window.showInputBox({
 				ignoreFocusOut: true,

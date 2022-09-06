@@ -5,6 +5,18 @@ import * as fs from 'fs';
 
 export let _SESSION: string;
 
+let fortune = ["Preparant el semáfor groc",
+"Segur que no t'has deixat un ;?",
+"Segmentation fault (core dumped)",
+"T'has deixat un punter penjant",
+"Que fas estudiant a aquestes hores?",
+"Segur que ara ho tens bé.",
+"Fes clic aquí per veure la solució ;)",
+"T'agraden els judicis? Proba l'ace attorney",
+"Boss makes a dollar. I make a dime. That's why my algorithms run in exponential time",
+"Donde está el peluche de linux?"];
+
+
 export function sendFile(filePath: string, problemPath: string, uploadToken: string) {
 	const formData = {
 		file: fs.createReadStream(filePath),
@@ -36,13 +48,59 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 		formData: formData
 	};
 
-	request.post(options, function optionalCallback(err: any, httpResponse: any, body: string) {
-		if (err) {
-			return console.error('upload failed:', err);
-		}
-		console.log('Upload successful!  Server responded with:', body);
-		console.log(httpResponse.statusCode);
+	function delay(time: number): Promise<void> {
+		return new Promise(resolve => {
+		  setTimeout(() => {
+			resolve();
+		  }, time);
+		});
+	  }
+
+	vscode.window.withProgress({
+		location: vscode.ProgressLocation.Notification,
+		title: "Submitting file to the Judge...",
+		cancellable: false
+	}, (progress) => {
+		progress.report({ increment: 0 });
+
+		const p = new Promise<void>(resolve => {
+
+			request.post(options, async function optionalCallback(err: any, httpResponse: any, body: string) {
+				if (err) {
+					return console.error('upload failed:', err);
+				}
+				console.log('Upload successful!  Server responded with:', body);
+				console.log(httpResponse.statusCode);
+				console.log(httpResponse.headers.location);
+				for(let i = 10; !isSubmissionDone(httpResponse.headers.location); i += 18){
+					if(i > 100) i = 99;
+					progress.report({ increment: i, message: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}` });
+					await delay(6000);
+				}
+				resolve();
+			});
+		});
+
+		return p;
 	});
+
+
+}
+
+async function isSubmissionDone(location: string) {
+	let submissionRaw = await getWebviewContent(`https://jutge.org${location}`);
+	console.log(submissionRaw);
+	console.log(submissionRaw.includes('Fortune'))
+	if(!submissionRaw.includes('Fortune')){
+		submissonResult(submissionRaw);
+		return true;
+	}
+
+	return false;
+}
+
+function submissonResult(submissionRaw: string){
+	
 }
 
 export async function loginCheck() {
