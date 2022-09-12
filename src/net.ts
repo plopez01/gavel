@@ -5,6 +5,9 @@ import * as fs from 'fs';
 
 export let _SESSION: string;
 
+let _progress = 0;
+let progressTimer: NodeJS.Timer;
+
 let fortune = ["Preparant el semáfor groc",
 "Segur que no t'has deixat un ;?",
 "Segmentation fault (core dumped)",
@@ -48,17 +51,9 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 		formData: formData
 	};
 
-	function delay(time: number): Promise<void> {
-		return new Promise(resolve => {
-		  setTimeout(() => {
-			resolve();
-		  }, time);
-		});
-	  }
-
 	vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		title: "Submitting file to the Judge...",
+		title: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}`,
 		cancellable: false
 	}, (progress) => {
 		progress.report({ increment: 0 });
@@ -70,14 +65,11 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 					return console.error('upload failed:', err);
 				}
 				console.log('Upload successful!  Server responded with:', body);
-				console.log(httpResponse.statusCode);
-				console.log(httpResponse.headers.location);
-				for(let i = 10; !isSubmissionDone(httpResponse.headers.location); i += 18){
-					if(i > 100) i = 99;
-					progress.report({ increment: i, message: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}` });
-					await delay(6000);
-				}
-				resolve();
+
+				progressTimer = setInterval(function(){
+					isSubmissionDone(httpResponse.headers.location, resolve);
+					progress.report({ increment: _progress+=16, message: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}` });
+				}, 6000);
 			});
 		});
 
@@ -87,12 +79,15 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 
 }
 
-async function isSubmissionDone(location: string) {
+async function isSubmissionDone(location: string, resolve: any) {
 	let submissionRaw = await getWebviewContent(`https://jutge.org${location}`);
-	console.log(submissionRaw);
-	console.log(submissionRaw.includes('Fortune'))
+	//console.log(submissionRaw);
+	//console.log(submissionRaw.includes('Fortune'))
 	if(!submissionRaw.includes('Fortune')){
 		submissonResult(submissionRaw);
+		clearInterval(progressTimer);
+		vscode.window.showInformationMessage("Uploaded succesfully!");
+		resolve();
 		return true;
 	}
 
