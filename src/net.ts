@@ -2,6 +2,7 @@ const request = require('request');
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as fs from 'fs';
+import { submissonResult } from './extension';
 
 export let _SESSION: string;
 
@@ -53,7 +54,7 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 
 	vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		title: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}`,
+		title: `Submitting - `,
 		cancellable: false
 	}, (progress) => {
 		progress.report({ increment: 0 });
@@ -68,7 +69,7 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 
 				progressTimer = setInterval(function(){
 					isSubmissionDone(httpResponse.headers.location, resolve);
-					progress.report({ increment: _progress+=16, message: `Submitting - ${fortune[Math.round(Math.random() * fortune.length) - 1]}` });
+					progress.report({ increment: _progress+=16, message: fortune[Math.round(Math.random() * fortune.length) - 1] });
 				}, 6000);
 			});
 		});
@@ -92,10 +93,6 @@ async function isSubmissionDone(location: string, resolve: any) {
 	}
 
 	return false;
-}
-
-function submissonResult(submissionRaw: string){
-	
 }
 
 export async function loginCheck() {

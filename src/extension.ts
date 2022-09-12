@@ -151,7 +151,6 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
-
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.submit', async () => {
 			loginCheck();
@@ -171,4 +170,52 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
+}
+
+export function submissonResult(submissionRaw: string){
+	try {
+		let problemTitle = submissionRaw.split(`<div class='panel-heading'>\n                `)[1].split('\n')[0];
+		//let veredict = submissionRaw.split(``)[1].split('</a>')[0];
+		//let veredictUrl = submissionRaw.split(`<div class="panel-heading">\n                `)[1].split(`/ico/`)[2].split(`'/>`)[0];
+		console.log(submissionRaw);
+		let html = `<!DOCTYPE html>
+		<html>
+			<header>
+				<style>
+					hr.solid {
+						border-top: 3px solid #bbb;
+					}
+					p1 {
+						font-size: medium;
+					}
+					td, th {
+						border: 1px solid #555555;
+						text-align: left;
+						padding: 8px;
+					}
+					tr:nth-child(even) {
+						background-color: #555555;
+					}
+				</style>
+			</header>
+			<body>
+				<strong><h1>${problemTitle} - ${"veredict"}</h1></strong>
+				<hr class="solid"><br>
+				<img src=${"veredictUrl"}>
+			</body>
+		</html>`;
+
+		
+		// Create and show panel
+		let webViewPanel = vscode.window.createWebviewPanel(
+			`Submission of ${problemTitle}`,
+			`Submission of ${problemTitle}` as string,
+			vscode.ViewColumn.Two,
+			{}
+		);
+
+		webViewPanel.webview.html = html;
+	} catch (e) {
+		vscode.window.showErrorMessage("Problem code invalid, or you don't have access.");
+	}
 }
