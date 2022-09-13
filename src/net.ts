@@ -96,11 +96,7 @@ async function isSubmissionDone(location: string, resolve: any) {
 
 export async function loginCheck() {
 	if (!_SESSION) {
-		let gSession = await getLoginInfo();
-		_SESSION = gSession;
-			if(!gSession){
-			vscode.window.showErrorMessage("An error has ocurred logging in.");
-		}
+		_SESSION = await getLoginInfo();
 		vscode.window.showInformationMessage("Logged in! Welcome to the courtroom.");
 	}
 }
@@ -241,15 +237,13 @@ export async function getLoginInfo(): Promise<string> {
 
 	if (username && password) {
 		let session = await login(username, password);
-		console.log(session);
-		if (session) return session;
 		fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
 			if (err) {
 				return console.log(err);
 			}
 			console.log("Credentials have been saved!");
-			return session;
 		});
+		return session;
 	} else {
 		vscode.window.showErrorMessage("You need to provide a valid username and password");
 	}
