@@ -54,13 +54,12 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 
 	vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		title: `Submitting - `,
+		title: `Submitting`,
 		cancellable: false
 	}, (progress) => {
-		progress.report({ increment: 0 });
+		progress.report({ increment: 0, message: fortune[Math.round(Math.random() * fortune.length) - 1] });
 
 		const p = new Promise<void>(resolve => {
-
 			request.post(options, async function optionalCallback(err: any, httpResponse: any, body: string) {
 				if (err) {
 					return console.error('upload failed:', err);

@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import { _SESSION, loginCheck, getWebviewContent, sendFile } from './net';
-
-let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+import * as fs from 'fs';
+import * as os from 'os';
+let statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 let _PROBLEMPATH: string;
 let _UPLOADTOKEN: string;
+let _PROBLEMID: string;
 
 export function activate(context: vscode.ExtensionContext) {
 	let webViewPanel;
@@ -62,6 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.problem', async () => {
 
+
+			// FIXME: Problem setting fails when user wasn't logged in and is asked to
 			await loginCheck();
 
 			const problemId = await vscode.window.showInputBox({
@@ -71,6 +75,8 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 
 			if (!problemId) return vscode.window.showErrorMessage('You need to enter a valid problem ID');
+
+			_PROBLEMID = problemId;
 
 			// And set its HTML content
 			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`);
@@ -174,10 +180,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function submissonResult(submissionRaw: string){
 	try {
+
 		let problemTitle = submissionRaw.split(`<div class='panel-heading'>\n                `)[1].split('\n')[0];
-		//let veredict = submissionRaw.split(``)[1].split('</a>')[0];
-		//let veredictUrl = submissionRaw.split(`<div class="panel-heading">\n                `)[1].split(`/ico/`)[2].split(`'/>`)[0];
-		console.log(submissionRaw);
+		let veredict = submissionRaw.split(`title='<b>`)[1].split('<')[0];
+		let compiler = submissionRaw.split(`title='<b>`)[2].split('<')[0];
+		let veredictUrl = submissionRaw.split(`<img src = '`)[1].split(`'`)[0];
+
+		// TODO: Maybe add a cleaner way to show analitycs
+		let analytics = submissionRaw.split(`<table class='result-table'>`)[2].split(`</table>`)[0]
+
+
+		// TODO: Add code metrics
+
 		let html = `<!DOCTYPE html>
 		<html>
 			<header>
@@ -196,20 +210,27 @@ export function submissonResult(submissionRaw: string){
 					tr:nth-child(even) {
 						background-color: #555555;
 					}
+					img {
+						float: right;
+					}
 				</style>
 			</header>
 			<body>
-				<strong><h1>${problemTitle} - ${"veredict"}</h1></strong>
+				<strong><h1>${problemTitle} - ${_PROBLEMID}</h1></strong>
 				<hr class="solid"><br>
-				<img src=${"veredictUrl"}>
+				<p1>Veredict: ${veredict}</p1><br>
+				<p1>Compiler: ${compiler}</p1><br>
+				<img src=https://jutge.org${veredictUrl}><br>
+				<table class='result-table'>
+				${analytics}
 			</body>
 		</html>`;
 
 		
 		// Create and show panel
 		let webViewPanel = vscode.window.createWebviewPanel(
-			`Submission of ${problemTitle}`,
-			`Submission of ${problemTitle}` as string,
+			`${problemTitle} - ${_PROBLEMID}`,
+			`${problemTitle} - ${_PROBLEMID}`,
 			vscode.ViewColumn.Two,
 			{}
 		);
