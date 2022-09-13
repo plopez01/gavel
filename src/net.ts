@@ -96,7 +96,11 @@ async function isSubmissionDone(location: string, resolve: any) {
 
 export async function loginCheck() {
 	if (!_SESSION) {
-		_SESSION = await getLoginInfo();
+		let gSession = await getLoginInfo();
+		_SESSION = gSession;
+			if(!gSession){
+			vscode.window.showErrorMessage("An error has ocurred logging in.");
+		}
 		vscode.window.showInformationMessage("Logged in! Welcome to the courtroom.");
 	}
 }
@@ -236,16 +240,14 @@ export async function getLoginInfo(): Promise<string> {
 	});
 
 	if (username && password) {
-		login(username, password).then((session) => {
-			console.log(session);
-			if (session == undefined) return;
-			fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
-				if (err) {
-					return console.log(err);
-				}
-				console.log("Credentials have been saved!");
-			});
-
+		let session = await login(username, password);
+		console.log(session);
+		if (session) return session;
+		fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
+			if (err) {
+				return console.log(err);
+			}
+			console.log("Credentials have been saved!");
 			return session;
 		});
 	} else {
