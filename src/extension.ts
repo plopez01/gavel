@@ -64,8 +64,6 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.problem', async () => {
 
-
-			// FIXME: Problem setting fails when user wasn't logged in and is asked to
 			await loginCheck();
 
 			const problemId = await vscode.window.showInputBox({

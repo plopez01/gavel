@@ -26,10 +26,11 @@ let fortune = ["Preparant el semáfor groc",
 
 
 export function sendFile(filePath: string, problemPath: string, uploadToken: string) {
+	
 	const formData = {
 		file: fs.createReadStream(filePath),
 		annotation: "",
-		compiler_id: config.get('judge.compiler'),
+		compiler_id: config.get('judge.compiler', 'P1++'),
 		token_uid: uploadToken,
 		submit: ""
 	};

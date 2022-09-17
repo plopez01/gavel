@@ -1,71 +1,34 @@
-# gavel README
+# gavel - Jutge.org integration
 
-This is the README for your extension "gavel". After writing up a brief description, we recommend including the following sections.
+Gavel is a vscode extension that provides integration for the Jutge.org code judge website.  
+Especially useful for those who are using it for PRO1/2 assignments in the UPC.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Take a quick view of your dashboard to see how are you progressing.
+- Set your working problem and open a side panel with all the problem information.
+- Submit your code and get results directly from the editor.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `gavel.session.storagePath`: Set the path where the sesion file is stored
+* `gavel.judge.compiler`: Sets the compiler that the judge will use i.e `P1++`.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Some problems do not load becouse of HTML inconsistency between problems due to `Jutge.org` not having an API.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+Latest version release notes
 
-### 1.0.0
+### 1.0.0-beta
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial beta release of Gavel
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+## Contribute to the extension!
+Repository will be made public once the extension is out of beta.
