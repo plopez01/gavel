@@ -80,13 +80,31 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// And set its HTML content
 			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`);
-
+			fs.writeFile(`${os.homedir()}/test.html`, problemRaw, function (err: any) {
+				if (err) {
+					console.log(err);
+				}
+				console.log("Credentials have been removed!");
+			});
 			try {
 				let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
 				let problemStatus = problemRaw.split(`<div class='col-sm-6'>\n                \n        <div class='panel panel-default'>\n            <div class='panel-heading'>\n                `)[1].split('\n')[0];
-				let problemSummary = problemRaw.split(`<P>`)[1].split('</P>')[0];
-				let expectedInput = problemRaw.split(`<P>`)[3].split('</P>')[0];
-				let expectedOutput = problemRaw.split(`<P>`)[5].split('</P>')[0];
+				let problemSummary
+				let expectedInput;
+				let expectedOutput;
+
+				// Solve inconsistent caps
+				if(problemRaw.split(`<P>`)[1]){
+					problemSummary = problemRaw.split(`<P>`)[1].split('</P>')[0];
+					expectedInput = problemRaw.split(`<P>`)[3].split('</P>')[0];
+					expectedOutput = problemRaw.split(`<P>`)[5].split('</P>')[0];
+				}else{
+					problemSummary = problemRaw.split(`<p>`)[1].split('</p>')[0];
+					expectedInput = problemRaw.split(`<p>`)[3].split('</p>')[0];
+					expectedOutput = problemRaw.split(`<p>`)[5].split('</p>')[0];
+				}
+				
+				
 
 
 				let html = `<!DOCTYPE html>

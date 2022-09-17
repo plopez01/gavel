@@ -9,6 +9,10 @@ export let _SESSION: string;
 let _progress = 0;
 let progressTimer: NodeJS.Timer;
 
+let config = vscode.workspace.getConfiguration('gavel');
+
+const defaultPath = `${os.homedir()}/judge.session`;
+
 let fortune = ["Preparant el semáfor groc",
 "Segur que no t'has deixat un ;?",
 "Segmentation fault (core dumped)",
@@ -25,7 +29,7 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 	const formData = {
 		file: fs.createReadStream(filePath),
 		annotation: "",
-		compiler_id: "Clang++17",
+		compiler_id: config.get('judge.compiler'),
 		token_uid: uploadToken,
 		submit: ""
 	};
@@ -167,7 +171,9 @@ export function login(user: string, pass: string): Promise<string> {
 				resolve(httpResponse.headers['set-cookie'][0].split("PHPSESSID=")[1].split(";")[0]);
 			} else {
 				vscode.window.showErrorMessage("An error has ocurred loggin in, please check your credentials");
-				fs.writeFile(`${os.homedir()}/judge.session`, '', function (err: any) {
+				let savePath = config.get('session.storagePath') as string;
+				if(!savePath) savePath = defaultPath;
+				fs.writeFile(savePath, '', function (err: any) {
 					if (err) {
 						reject(console.log(err));
 					}
@@ -213,7 +219,9 @@ export function isSessionValid(session: string): Promise<boolean> {
 export async function getLoginInfo(): Promise<string> {
 
 	try {
-		const session = fs.readFileSync(`${os.homedir()}/judge.session`, 'utf8');
+		let readPath = config.get('session.storagePath') as string;
+		if(!readPath) readPath = defaultPath;
+		const session = fs.readFileSync(readPath, 'utf8');
 		if (session) {
 			if (await isSessionValid(session)) return session;
 		}
@@ -237,7 +245,9 @@ export async function getLoginInfo(): Promise<string> {
 
 	if (username && password) {
 		let session = await login(username, password);
-		fs.writeFile(`${os.homedir()}/judge.session`, session, function (err: any) {
+		let savePath = config.get('session.storagePath') as string;
+		if(!savePath) savePath = defaultPath;
+		fs.writeFile(savePath, session, function (err: any) {
 			if (err) {
 				return console.log(err);
 			}

@@ -32,7 +32,22 @@
         "title": "Submit problem to the judge",
         "category": "Judge Trial"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Judge settings",
+      "properties": {
+        "session.storagePath": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Set the path where your session key will be stored."
+        },
+        "judge.compiler": {
+          "type": "string",
+          "default": "P1++",
+          "description": "Set the compiler the judge will use when submitting."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
