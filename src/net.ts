@@ -85,8 +85,6 @@ export function sendFile(filePath: string, problemPath: string, uploadToken: str
 
 async function isSubmissionDone(location: string, resolve: any) {
 	let submissionRaw = await getWebviewContent(`https://jutge.org${location}`);
-	//console.log(submissionRaw);
-	//console.log(submissionRaw.includes('Fortune'))
 	if(!submissionRaw.includes('Fortune')){
 		submissonResult(submissionRaw);
 		clearInterval(progressTimer);
@@ -163,9 +161,6 @@ export function login(user: string, pass: string): Promise<string> {
 		};
 
 		request.post(options, function (err: any, httpResponse: any, body: any) {
-			console.log(body);
-			console.log(httpResponse.headers);
-			console.log(httpResponse.statusCode);
 
 			if (httpResponse.statusCode == 302) {
 				resolve(httpResponse.headers['set-cookie'][0].split("PHPSESSID=")[1].split(";")[0]);
@@ -173,12 +168,8 @@ export function login(user: string, pass: string): Promise<string> {
 				vscode.window.showErrorMessage("An error has ocurred loggin in, please check your credentials");
 				let savePath = config.get('session.storagePath') as string;
 				if(!savePath) savePath = defaultPath;
-				fs.writeFile(savePath, '', function (err: any) {
-					if (err) {
-						reject(console.log(err));
-					}
-					console.log("Credentials have been removed!");
-				});
+				
+				
 			}
 		})
 

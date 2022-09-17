@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 			let dashboardRaw = await getWebviewContent('https://jutge.org/dashboard');
-			//console.log(dashboardRaw);
+
 			// Time to hack us into the data, webscrapping time
 			let username = dashboardRaw.split(`<span class='hidden-xs'>`)[1].split('\n')[1].replace(/\s+/, "");
 			let acceptedProblems = dashboardRaw.split(`<div class='col-xs-9 text-right'>\n                                <small>Accepted Problems</small>\n                                <div class='huge'>`)[1].split('</div>')[0];
@@ -86,6 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				console.log("Credentials have been removed!");
 			});
+			
 			try {
 				let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
 				let problemStatus = problemRaw.split(`<div class='col-sm-6'>\n                \n        <div class='panel panel-default'>\n            <div class='panel-heading'>\n                `)[1].split('\n')[0];
@@ -156,7 +157,6 @@ export function activate(context: vscode.ExtensionContext) {
 				_PROBLEMPATH = problemRaw.split(`<form class='form-horizontal' action='`)[1].split("'")[0];
 				_UPLOADTOKEN = problemRaw.split(`<input name='token_uid' type='hidden' value='`)[1].split(`' />`)[0];
 
-				console.log(_UPLOADTOKEN);
 				// Create and show panel
 				webViewPanel = vscode.window.createWebviewPanel(
 					problemId as string,
