@@ -13,7 +13,8 @@
   "activationEvents": [
     "onCommand:gavel.dashboard",
     "onCommand:gavel.problem",
-    "onCommand:gavel.submit"
+    "onCommand:gavel.submit",
+    "onCommand:gavel.check"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,6 +32,11 @@
       {
         "command": "gavel.submit",
         "title": "Submit problem to the judge",
+        "category": "Judge Trial"
+      },
+      {
+        "command": "gavel.check",
+        "title": "Compile and check against public testcase",
         "category": "Judge Trial"
       }
     ],

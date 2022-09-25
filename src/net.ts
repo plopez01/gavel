@@ -251,3 +251,27 @@ export async function getLoginInfo(): Promise<string> {
 	}
 	return "";
 }
+
+// TODO: Move this and other functions to separate files
+export function selectTerminal(): Thenable<vscode.Terminal | undefined> {
+	interface TerminalQuickPickItem extends vscode.QuickPickItem {
+		terminal: vscode.Terminal;
+	}
+	const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
+	const items: TerminalQuickPickItem[] = terminals.map(t => {
+		return {
+			label: `name: ${t.name}`,
+			terminal: t
+		};
+	});
+	return vscode.window.showQuickPick(items).then(item => {
+		return item ? item.terminal : undefined;
+	});
+}
+
+export function ensureTerminalExists(): boolean {
+	if ((<any>vscode.window).terminals.length === 0) {
+		vscode.window.createTerminal(`Gavel`)
+	}
+	return true;
+}
