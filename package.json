@@ -22,22 +22,22 @@
       {
         "command": "gavel.dashboard",
         "title": "Show Judge's dashboard",
-        "category": "Judge Trial"
+        "category": "Gavel"
       },
       {
         "command": "gavel.problem",
         "title": "Set working problem",
-        "category": "Judge Trial"
+        "category": "Gavel"
       },
       {
         "command": "gavel.submit",
         "title": "Submit problem to the judge",
-        "category": "Judge Trial"
+        "category": "Gavel"
       },
       {
         "command": "gavel.check",
         "title": "Compile and check against public testcase",
-        "category": "Judge Trial"
+        "category": "Gavel"
       }
     ],
     "configuration": {
@@ -79,7 +79,7 @@
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "@vscode/test-electron": "^2.1.5",
-    "esbuild": "^0.15.7",
+    "esbuild": "^0.15.9",
     "eslint": "^8.20.0",
     "glob": "^8.0.3",
     "mocha": "^10.0.0",

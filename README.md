@@ -7,6 +7,7 @@ Especially useful for those who are using it for PRO1/2 assignments in the UPC.
 
 - Take a quick view of your dashboard to see how are you progressing.
 - Set your working problem and open a side panel with all the problem information.
+- Compile and compare your output to the public testcase automatically.
 - Submit your code and get results directly from the editor.
 
 ## Extension Settings
@@ -19,10 +20,17 @@ This extension contributes the following settings:
 ## Known Issues
 
 Some problems do not load becouse of HTML inconsistency between problems due to `Jutge.org` not having an API.
+Config is not working.
 
 ## Release Notes
 
 Latest version release notes
+
+### 1.1.0-beta
+
+Auto compiling and diff testing added to Linux 
+
+---
 
 ### 1.0.0-beta
 
