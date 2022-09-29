@@ -1,6 +1,8 @@
 {
   "name": "gavel",
+  "publisher": "Plopez",
   "author": "Plopez",
+  "icon": "https://lliçons.jutge.org/logos/lli%C3%A7ons.png",
   "repository": "https://github.com/plopez01/gavel",
   "displayName": "Gavel",
   "description": "",
