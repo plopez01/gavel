@@ -11,7 +11,7 @@ let progressTimer: NodeJS.Timer;
 
 let config = vscode.workspace.getConfiguration('gavel');
 
-const defaultPath = `${os.homedir()}/judge.session`;
+const defaultPath = `${os.homedir()}/.gavel/judge.session`;
 
 let fortune = ["Preparant el semáfor groc",
 "Segur que no t'has deixat un ;?",

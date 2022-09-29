@@ -7,8 +7,16 @@ let _PROBLEMPATH: string;
 let _UPLOADTOKEN: string;
 let _PROBLEMID: string;
 
+const dataFolder = os.homedir() + "/.gavel/";
+
 export function activate(context: vscode.ExtensionContext) {
 	let webViewPanel;
+
+
+	if (!fs.existsSync(dataFolder)){
+		fs.mkdirSync(dataFolder);
+	}
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gavel.dashboard', async () => {
 
@@ -79,23 +87,26 @@ export function activate(context: vscode.ExtensionContext) {
 							let inVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i];
 							let outVal = problemRaw.split(`<pre class='scrollable returnsymbol'>`)[i + 1];
 							if (!inVal || !outVal) break;
-							tIn.push(inVal.split('</pre>')[0].replace('\n', '<br>'));
-							tOut += outVal.split('</pre>')[0].replace('\n', '<br>');
+							tIn.push(inVal.split('</pre>')[0]);
+							tOut += outVal.split('</pre>')[0];
 							if (i % 2) i += 2;
 						}
 
-						fs.writeFile(__dirname + `/testcase.txt`, problemRaw, function (err: any) {
+						fs.writeFile(dataFolder + `testcase.txt`, tOut, function (err: any) {
 							if (err) {
 								console.log(err);
 							}
 							selectTerminal().then(terminal => {
 								if (terminal) {
+									terminal.sendText(`clear`);
 									terminal.show();
+									terminal.sendText(`rm ${dataFolder}out.txt`);
 									terminal.sendText(`g++ -ansi -O2 -DNDEBUG -D_GLIBCXX_DEBUG -Wall -Wextra -Werror -Wno-sign-compare -Wshadow ${activeEditor.document.uri.fsPath}`);
 									tIn.forEach(element => {
-										terminal.sendText(`echo "${element}" | ./a.out >> out.txt`);
+										console.log(element);
+										terminal.sendText(`echo "${element.replace('\n', '')}" | ./a.out >> ${dataFolder}out.txt`);
 									});
-									terminal.sendText(`diff ${__dirname}/testcase.txt out.txt`);
+									terminal.sendText(`diff ${dataFolder}testcase.txt ${dataFolder}out.txt`);
 								}
 							});
 						});
@@ -128,12 +139,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// And set its HTML content
 			let problemRaw = await getWebviewContent(`https://jutge.org/problems/${problemId}`);
-			fs.writeFile(`${os.homedir()}/test.html`, problemRaw, function (err: any) {
+			/*fs.writeFile(`${os.homedir()}/test.html`, problemRaw, function (err: any) {
 				if (err) {
 					console.log(err);
 				}
 				console.log("Credentials have been removed!");
-			});
+			});*/
 			
 			try {
 				let problemTitle = problemRaw.split(`<a style='color: inherit;' title='Problems' href='/problems'><i class='fa fa-fw fa-puzzle-piece'></i></a>`)[1].split('\n')[1].replace(/\s+/, "");;
